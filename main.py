@@ -17,6 +17,7 @@ except:
 # Попытка загрузки фона
 try:
     background = pygame.image.load('files/result_a5439e1.jpg')
+    background1 = pygame.image.load('files/back1.jpg')
 except:
     # Если файла нет, делаем серый фон
     background = pygame.Surface((wight, height))
@@ -62,9 +63,10 @@ bullets = []
 enemies = []
 coins = []
 door = None
+flag_leve2 = False
 last_bullet_time = 0
 bullet_cooldown = 500  # Задержка между выстрелами (мс)
-hit_cooldown = 1000    # Задержка между ударами врага (мс)
+hit_cooldown = 1000  # Задержка между ударами врага (мс)
 
 # Данные уровней
 level1_data = [
@@ -86,11 +88,7 @@ level1_data = [
     [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
-level2_data = [
-    [0] * 28 for _ in range(14)
-] + [
-    [1] * 28
-]
+
 
 # ======== Классы ========
 
@@ -131,6 +129,49 @@ class World:
         for tile in self.tile_list:
             surface.blit(tile[0], tile[1])
 
+
+class World2:
+    def __init__(self, data):
+        # Пытаемся загрузить текстуры для плит
+        try:
+            grass_image = pygame.image.load('files/gress.jpg')
+        except:
+            grass_image = pygame.Surface((tile_size, tile_size))
+            grass_image.fill((0, 255, 0))
+        self.tile_list = []
+        row_count = 0
+        for row in data:
+            col_count = 0
+            for tile in row:
+                if tile == 1:
+                    img = pygame.transform.scale(grass_image, (tile_size, tile_size))
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    self.tile_list.append((img, img_rect))
+
+
+level2_data = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+    [1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 0, 3, 0, 0, 0, 0, 0, 1, 1],
+    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+    [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+    [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
+    [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1]
+]
+
+
 class Button(pygame.sprite.Sprite):
     def __init__(self, x, y, text_str):
         pygame.sprite.Sprite.__init__(self)
@@ -143,6 +184,7 @@ class Button(pygame.sprite.Sprite):
         self.text = font.render(self.text_str, True, (0, 0, 0))
         self.text_rect = self.text.get_rect(center=(75, 25))
         self.button_rect = pygame.Rect(self.x, self.y, 150, 50)
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, player_x, player_y, size):
@@ -239,6 +281,7 @@ class Player(pygame.sprite.Sprite):
     def player_dead(self):
         surface.blit(dead_img, (self.rect.x, self.rect.y))
 
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, enemy_x, enemy_y, size):
         pygame.sprite.Sprite.__init__(self)
@@ -276,6 +319,7 @@ class Enemy(pygame.sprite.Sprite):
         if self.enemy_anim_count >= len(self.animation):
             self.enemy_anim_count = 0
 
+
 class Coin(pygame.sprite.Sprite):
     def __init__(self, x, y, size):
         pygame.sprite.Sprite.__init__(self)
@@ -293,6 +337,7 @@ class Coin(pygame.sprite.Sprite):
     def draw(self):
         surface.blit(coin_image, (self.x, self.y))
 
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
@@ -306,6 +351,7 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.x < 0 or self.rect.x > wight:
             return False
         return True
+
 
 class Door(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -321,6 +367,7 @@ class Door(pygame.sprite.Sprite):
     def draw(self):
         surface.blit(self.image, self.rect)
 
+
 class HealthBar:
     def __init__(self, x, y, health, max_health):
         self.x = x
@@ -335,11 +382,14 @@ class HealthBar:
         pygame.draw.rect(surface, (255, 0, 0), (self.x, self.y, 150, 20))
         pygame.draw.rect(surface, (0, 128, 0), (self.x, self.y, 150 * ratio, 20))
 
+
 healthbar = HealthBar(30, 30, 4, 4)
 font = pygame.font.Font(None, 36)
 
+
 def load_level(level):
-    global world, player, enemies, coins, door, current_level, player_health, coin_count, bullets, game_over
+    global world, player, enemies, coins, door, current_level, player_health, coin_count, \
+        bullets, game_over, flag_leve2
     current_level = level
     player_health = 4.0
     coin_count = 0
@@ -350,7 +400,7 @@ def load_level(level):
         player.rect.x = 0
         player.rect.y = 160
         door_pos_x = wight - tile_size  # правая часть экрана
-        door_pos_y = 0                 # верх
+        door_pos_y = 0  # верх
         door = Door(door_pos_x, door_pos_y)
 
         enemies.clear()
@@ -366,24 +416,28 @@ def load_level(level):
         coins.append(Coin(779, 98, 5))
 
     elif level == 2:
+        flag_leve2 = True
+        surface.blit(background1, (0, 0))
         world = World(level2_data)
-        player.rect.x = wight - 60
-        player.rect.y = 100
+        player.rect.x = 0
+        player.rect.y = 160
         door = Door(0, height - tile_size)  # левый нижний угол
 
         enemies.clear()
-        enemies.append(Enemy(200, 400, 0.05))
-        enemies.append(Enemy(400, 350, 0.05))
+        enemies.append(Enemy(600, 295, 0.05))
+        enemies.append(Enemy(260, 360, 0.05))
 
         coins.clear()
-        coins.append(Coin(300, 400, 5))
-        coins.append(Coin(500, 300, 5))
-        coins.append(Coin(600, 200, 5))
+        coins.append(Coin(250, 370, 5))
+        coins.append(Coin(513, 250, 5))
+        coins.append(Coin(730, 190, 5))
+
 
 # Создаём игрока
 player = Player(0, 160, 0.4)
 # Загружаем 1-й уровень
 load_level(1)
+
 
 def pause_menu():
     paused = True
@@ -427,6 +481,7 @@ def pause_menu():
         pygame.display.update()
         clock.tick(60)
 
+
 start_button = Button(315, 150, "Start")
 exit_button_main = Button(315, 230, "Exit")
 
@@ -461,17 +516,20 @@ while running:
 
     else:
         clock.tick(60)
-        surface.blit(background, (0, 0))
+        if not flag_leve2:
+            surface.blit(background, (0, 0))
+        else:
+            surface.blit(background1, (0, 0))
         world.draw()
         door.draw()
 
-                    # Монеты
+        # Монеты
         for c in coins:
             if c.coin_flag:
                 c.draw()
             c.colision()
 
-                    # Игрок
+            # Игрок
         player.move()
 
         for enemy in enemies[:]:
