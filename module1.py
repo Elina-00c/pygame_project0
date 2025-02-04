@@ -12,4 +12,5 @@ BULLET_IMAGE_WAY = 'files/bullet.png'
 DOOR_IMAGE_WAY = 'files/door.png'
 RULES_BUTTON = 'Rules'
 RESUME_BUTTON = "Resume"
+RESTART_BUTTON = "Restart"
 

@@ -1,23 +1,25 @@
 import pygame
 import sys
 
+import module1
+
 pygame.init()
 wight = 830
 height = 500
 surface = pygame.display.set_mode((wight, height))
-pygame.display.set_caption('Our Game')
+pygame.display.set_caption(module1.GAME_NAME)
 
 # Попытка загрузки иконки
 try:
-    icone = pygame.image.load('files/icon.png')
+    icone = pygame.image.load(module1.ICONE_IMAGE_WAY)
     pygame.display.set_icon(icone)
 except:
     pass
 
 # Попытка загрузки фона
 try:
-    background = pygame.image.load('files/result_a5439e1.jpg')
-    background1 = pygame.image.load('files/back1.jpg')
+    background = pygame.image.load(module1.BACK_IMAGE_WAY)
+    background1 = pygame.image.load(module1.BACK1_IMAGE_WAY)
 except:
     # Если файла нет, делаем серый фон
     background = pygame.Surface((wight, height))
@@ -25,7 +27,7 @@ except:
 
 # Попытка загрузки изображения при смерти
 try:
-    dead_img = pygame.image.load('files/dead.png')
+    dead_img = pygame.image.load(module1.DEAD_IMAGE_WAY)
     dead_img = pygame.transform.scale(dead_img, (int(dead_img.get_width() * 0.1), int(dead_img.get_height() * 0.1)))
 except:
     dead_img = pygame.Surface((50, 50))
@@ -33,7 +35,7 @@ except:
 
 # Попытка загрузки изображения монетки
 try:
-    coin_image = pygame.image.load('files/coin.png')
+    coin_image = pygame.image.load(module1.COIN_IMAGE_WAY)
     coin_image = pygame.transform.scale(
         coin_image,
         (int(coin_image.get_width() * 0.02), int(coin_image.get_height() * 0.02))
@@ -44,7 +46,7 @@ except:
 
 # Попытка загрузки изображения пули
 try:
-    bullet_img = pygame.image.load('files/bullet.png')
+    bullet_img = pygame.image.load(module1.BULLET_IMAGE_WAY)
     bullet_img = pygame.transform.scale(bullet_img, (10, 5))
 except:
     bullet_img = pygame.Surface((10, 5))
@@ -73,14 +75,14 @@ level1_data = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
     [1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0],
+    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 0, 3, 0, 0, 0, 0, 1, 1, 0],
     [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
     [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
     [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1],
@@ -96,12 +98,12 @@ class World:
     def __init__(self, data):
         # Пытаемся загрузить текстуры для плит
         try:
-            grass_image = pygame.image.load('files/gress.jpg')
+            grass_image = pygame.image.load(module1.GRESS_IMAGE_WAY)
         except:
             grass_image = pygame.Surface((tile_size, tile_size))
             grass_image.fill((0, 255, 0))
         try:
-            water_image = pygame.image.load('files/water.png')
+            water_image = pygame.image.load(module1.WATER_IMAGE_WAY)
         except:
             water_image = pygame.Surface((tile_size, tile_size))
             water_image.fill((0, 0, 255))
@@ -134,7 +136,7 @@ class World2:
     def __init__(self, data):
         # Пытаемся загрузить текстуры для плит
         try:
-            grass_image = pygame.image.load('files/gress.jpg')
+            grass_image = pygame.image.load(module1.GRESS_IMAGE_WAY)
         except:
             grass_image = pygame.Surface((tile_size, tile_size))
             grass_image.fill((0, 255, 0))
@@ -330,7 +332,7 @@ class Coin(pygame.sprite.Sprite):
 
     def colision(self):
         global coin_count
-        if self.coin_flag and abs(player.rect.x - self.x) < 35 and abs(player.rect.y - self.y) < 35:
+        if self.coin_flag and abs(player.rect.x - self.x) < 20 and abs(player.rect.y - self.y) < 20:
             self.coin_flag = False
             coin_count += 1
 
@@ -357,7 +359,7 @@ class Door(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         try:
-            self.image = pygame.image.load('files/door.png')
+            self.image = pygame.image.load(module1.DOOR_IMAGE_WAY)
             self.image = pygame.transform.scale(self.image, (tile_size, tile_size))
         except:
             self.image = pygame.Surface((tile_size, tile_size))
@@ -441,9 +443,9 @@ load_level(1)
 
 def pause_menu():
     paused = True
-    resume_button = Button(315, 150, "Resume")
-    restart_button = Button(315, 230, "Restart")
-    exit_button = Button(315, 310, "Exit")
+    resume_button = Button(315, 150, module1.RESUME_BUTTON)
+    restart_button = Button(315, 230, module1.RESTART_BUTTON)
+    exit_button = Button(315, 310, module1.EXIT_BUTTON)
 
     while paused:
         for event in pygame.event.get():
@@ -482,8 +484,8 @@ def pause_menu():
         clock.tick(60)
 
 
-start_button = Button(315, 150, "Start")
-exit_button_main = Button(315, 230, "Exit")
+start_button = Button(315, 150, module1.START_BUTTON)
+exit_button_main = Button(315, 230, module1.EXIT_BUTTON)
 
 running = True
 while running:
