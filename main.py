@@ -9,6 +9,12 @@ height = 500
 surface = pygame.display.set_mode((wight, height))
 pygame.display.set_caption(module1.GAME_NAME)
 
+# Попытка загрузки правил игры
+try:
+    rules = pygame.image.load('files/rules.jpg')
+except:
+    pass
+
 # Попытка загрузки иконки
 try:
     icone = pygame.image.load(module1.ICONE_IMAGE_WAY)
@@ -20,6 +26,7 @@ except:
 try:
     background = pygame.image.load(module1.BACK_IMAGE_WAY)
     background1 = pygame.image.load(module1.BACK1_IMAGE_WAY)
+    background2 = pygame.image.load('files/back2.jpg')
 except:
     # Если файла нет, делаем серый фон
     background = pygame.Surface((wight, height))
@@ -58,14 +65,16 @@ start_game = False
 clock = pygame.time.Clock()
 
 # Глобальные переменные
-current_level = 1
+current_level = 0
 player_health = 4.0
 coin_count = 0
+door_count = 0
 bullets = []
 enemies = []
 coins = []
 door = None
-flag_leve2 = False
+flag_level3 = False
+flag_level2 = False
 last_bullet_time = 0
 bullet_cooldown = 500  # Задержка между выстрелами (мс)
 hit_cooldown = 1000  # Задержка между ударами врага (мс)
@@ -95,6 +104,10 @@ level1_data = [
 # ======== Классы ========
 
 class World:
+    """
+    Класс для представление основного уровня игры
+    """
+
     def __init__(self, data):
         # Пытаемся загрузить текстуры для плит
         try:
@@ -128,11 +141,19 @@ class World:
             row_count += 1
 
     def draw(self):
+        """
+        Рисуем клетки
+        :return:
+        """
         for tile in self.tile_list:
             surface.blit(tile[0], tile[1])
 
 
 class World2:
+    """
+    Класс для представление второго уровня в игре
+    """
+
     def __init__(self, data):
         # Пытаемся загрузить текстуры для плит
         try:
@@ -173,8 +194,32 @@ level2_data = [
     [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1]
 ]
 
+level3_data = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+    [1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 0, 3, 0, 0, 0, 0, 1, 1, 0],
+    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+    [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+]
+
 
 class Button(pygame.sprite.Sprite):
+    """
+    Класс для создания кнопок меню
+    """
+
     def __init__(self, x, y, text_str):
         pygame.sprite.Sprite.__init__(self)
         self.x = x
@@ -189,6 +234,10 @@ class Button(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
+    """
+    Класс основного игрока
+    """
+
     def __init__(self, player_x, player_y, size):
         pygame.sprite.Sprite.__init__(self)
         self.walk_right = []
@@ -220,6 +269,10 @@ class Player(pygame.sprite.Sprite):
         self.last_hit_time = 0
 
     def move(self):
+        """
+        Функция для осуществления движений и анимации персонажа
+        :return:
+        """
         dx = 0
         dy = 0
         walk_cooldown = 5
@@ -281,10 +334,18 @@ class Player(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
 
     def player_dead(self):
+        """
+        Рисуем смерть персонажа
+        :return:
+        """
         surface.blit(dead_img, (self.rect.x - 15, self.rect.y - 25))
 
 
 class Enemy(pygame.sprite.Sprite):
+    """
+    Класс для представления врагов в игре
+    """
+
     def __init__(self, enemy_x, enemy_y, size):
         pygame.sprite.Sprite.__init__(self)
         self.animation = []
@@ -306,14 +367,26 @@ class Enemy(pygame.sprite.Sprite):
         self.max_x = enemy_x + 50
 
     def update_movement(self):
+        """
+        Движение врагов
+        :return:
+        """
         self.rect.x += self.speed * self.direction
         if self.rect.x <= self.min_x or self.rect.x >= self.max_x:
             self.direction *= -1
 
     def draw_enemy(self):
+        """
+        Рисуем врагов
+        :return:
+        """
         surface.blit(self.animation[self.enemy_anim_count], self.rect)
 
     def animation_enemy(self):
+        """
+        Анимация врагов
+        :return:
+        """
         animation_clock = 125
         if pygame.time.get_ticks() - self.update_time > animation_clock:
             self.update_time = pygame.time.get_ticks()
@@ -323,6 +396,10 @@ class Enemy(pygame.sprite.Sprite):
 
 
 class Coin(pygame.sprite.Sprite):
+    """
+    Класс для представления монет в игре
+    """
+
     def __init__(self, x, y, size):
         pygame.sprite.Sprite.__init__(self)
         self.x = x
@@ -331,16 +408,28 @@ class Coin(pygame.sprite.Sprite):
         self.coin_flag = True
 
     def colision(self):
+        """
+        Проверка столкновений с монетой
+        :return:
+        """
         global coin_count
         if self.coin_flag and abs(player.rect.x - self.x) < 35 and abs(player.rect.y - self.y) < 35:
             self.coin_flag = False
             coin_count += 1
 
     def draw(self):
+        """
+        Рисуем монету
+        :return:
+        """
         surface.blit(coin_image, (self.x, self.y))
 
 
 class Bullet(pygame.sprite.Sprite):
+    """
+    Класс для представления пули от игрока
+    """
+
     def __init__(self, x, y, direction):
         pygame.sprite.Sprite.__init__(self)
         self.image = bullet_img
@@ -349,6 +438,10 @@ class Bullet(pygame.sprite.Sprite):
         self.speed = 10 * self.direction
 
     def update(self):
+        """
+        Движение пули
+        :return:
+        """
         self.rect.x += self.speed
         if self.rect.x < 0 or self.rect.x > wight:
             return False
@@ -356,21 +449,33 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class Door(pygame.sprite.Sprite):
+    """
+    Класс для представления дверей на другие уровни
+    """
+
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         try:
             self.image = pygame.image.load(module1.DOOR_IMAGE_WAY)
-            self.image = pygame.transform.scale(self.image, (tile_size * 3, tile_size * 3))
+            self.image = pygame.transform.scale(self.image, (tile_size * 1, tile_size * 1))
         except:
             self.image = pygame.Surface((tile_size, tile_size))
             self.image.fill((150, 75, 0))
-        self.rect = self.image.get_rect(topleft=(x - 50, y))
+        self.rect = self.image.get_rect(topleft=(x + 100, y - 315))
 
     def draw(self):
+        """
+        Рисуем дверь
+        :return:
+        """
         surface.blit(self.image, self.rect)
 
 
 class HealthBar:
+    """
+    Класс для представления шкалы здоровья игрока
+    """
+
     def __init__(self, x, y, health, max_health):
         self.x = x
         self.y = y
@@ -378,6 +483,11 @@ class HealthBar:
         self.max_health = max_health
 
     def draw(self, health):
+        """
+        Рисуем шкалу
+        :param health:
+        :return:
+        """
         self.health = health
         ratio = self.health / self.max_health
         pygame.draw.rect(surface, (0, 0, 0), (self.x - 2, self.y - 2, 154, 24))
@@ -390,11 +500,17 @@ font = pygame.font.Font(None, 36)
 
 
 def load_level(level):
+    """
+    Функция для добалвения уровней в игру
+    :param level:
+    :return:
+    """
     global world, player, enemies, coins, door, current_level, player_health, coin_count, \
-        bullets, game_over, flag_leve2
+        bullets, game_over, flag_level2, flag_level3, door_count
     current_level = level
     player_health = 3.0
     coin_count = 0
+    door_count = 0
     game_over = False
     bullets = []
     if level == 1:
@@ -404,6 +520,7 @@ def load_level(level):
         door_pos_x = 700  # правая часть экрана
         door_pos_y = 376  # верх
         door = Door(door_pos_x, door_pos_y)
+        door_count = 1
 
         enemies.clear()
         enemies.append(Enemy(330, 445, 0.05))
@@ -418,11 +535,32 @@ def load_level(level):
         coins.append(Coin(779, 98, 5))
 
     elif level == 2:
-        flag_leve2 = True
+        flag_level2 = True
         surface.blit(background1, (0, 0))
         world = World(level2_data)
         player.rect.x = 0
         player.rect.y = 160
+        door_pos_x = 678  # правая часть экрана
+        door_pos_y = 316  # верх
+        door = Door(door_pos_x, door_pos_y)
+        door_count = 2
+
+        enemies.clear()
+        enemies.append(Enemy(600, 295, 0.05))
+        enemies.append(Enemy(260, 360, 0.05))
+
+        coins.clear()
+        coins.append(Coin(250, 370, 5))
+        coins.append(Coin(513, 250, 5))
+        coins.append(Coin(730, 190, 5))
+
+    elif level == 3:
+        flag_level3 = True
+        surface.blit(background2, (0, 0))
+        world = World(level2_data)
+        player.rect.x = 0
+        player.rect.y = 160
+        door_count = 3
         door = Door(678, 316)
 
         enemies.clear()
@@ -442,6 +580,10 @@ load_level(1)
 
 
 def pause_menu():
+    """
+    Функция для создания pause menu в игре
+    :return:
+    """
     paused = True
     resume_button = Button(315, 150, module1.RESUME_BUTTON)
     restart_button = Button(315, 230, module1.RESTART_BUTTON)
@@ -486,11 +628,19 @@ def pause_menu():
 
 start_button = Button(315, 150, module1.START_BUTTON)
 exit_button_main = Button(315, 230, module1.EXIT_BUTTON)
+rules_button_main = Button(315, 310, module1.RULES_BUTTON)
+flag_rules = False
 
 running = True
 while running:
     clock.tick(90)
-    if not start_game:
+    if flag_rules:
+        surface.fill((0, 0, 0))
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            flag_rules = False
+    # проверяем началась ли игра
+    elif not start_game:
         surface.fill((0, 0, 0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -500,9 +650,11 @@ while running:
                     start_game = True
                 elif exit_button_main.button_rect.collidepoint(event.pos):
                     running = False
+                elif rules_button_main.button_rect.collidepoint(event.pos):
+                    flag_rules = True
 
                     # Рисуем кнопки стартового меню
-        for btn in [start_button, exit_button_main]:
+        for btn in [start_button, exit_button_main, rules_button_main]:
             if btn.button_rect.collidepoint(pygame.mouse.get_pos()):
                 pygame.draw.rect(btn.button_surface, (216, 177, 191), (1, 1, 148, 48))
             else:
@@ -516,10 +668,12 @@ while running:
 
         pygame.display.update()
 
-    else:
+    elif start_game and not flag_rules:
         clock.tick(60)
-        if not flag_leve2:
+        if not flag_level2 and not flag_level3:
             surface.blit(background, (0, 0))
+        elif flag_level3 and not flag_level2:
+            surface.blit(background2, (0, 0))
         else:
             surface.blit(background1, (0, 0))
         world.draw()
@@ -532,7 +686,8 @@ while running:
             c.colision()
 
             # Игрок
-        player.move()
+        if not game_over:
+            player.move()
 
         for enemy in enemies[:]:
             enemy.update_movement()
@@ -560,13 +715,20 @@ while running:
                 surface.blit(bullet.image, bullet.rect)
 
             # Переход между уровнями (дверь)
-        if player.rect.colliderect(door.rect):
+        if player.rect.colliderect(door.rect) and door_count == 1:
             if current_level == 1:
                 load_level(2)
             else:
                 load_level(1)
 
-            # Здоровье и монеты
+        if player.rect.colliderect(door.rect) and door_count == 2:
+            flag_level2 = False
+            if current_level == 2:
+                load_level(3)
+            else:
+                load_level(3)
+
+        # Здоровье и монеты
         healthbar.draw(player_health)
         coin_text = font.render(f"Coins: {coin_count}", True, (255, 255, 255))
         surface.blit(coin_text, (wight - 150, 30))
@@ -586,6 +748,11 @@ while running:
 
         # Если здоровье <= 0 – смерть
         if player_health <= 0:
+            game_over = True
+            player.player_dead()
+        # Если здоровье > 0, но игрок упал в бездну или воду – смерть
+        if player_health > 0 and player.rect.y == height:
+            healthbar.draw(0)
             game_over = True
             player.player_dead()
 
