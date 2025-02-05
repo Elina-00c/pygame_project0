@@ -28,7 +28,7 @@ except:
 # Попытка загрузки изображения при смерти
 try:
     dead_img = pygame.image.load(module1.DEAD_IMAGE_WAY)
-    dead_img = pygame.transform.scale(dead_img, (int(dead_img.get_width() * 0.1), int(dead_img.get_height() * 0.1)))
+    dead_img = pygame.transform.scale(dead_img, (int(dead_img.get_width() * 0.16), int(dead_img.get_height() * 0.16)))
 except:
     dead_img = pygame.Surface((50, 50))
     dead_img.fill((255, 0, 0))
@@ -167,7 +167,7 @@ level2_data = [
     [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 0, 3, 0, 0, 0, 0, 0, 1, 1],
     [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
     [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-    [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
+    [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
     [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1]
@@ -281,7 +281,7 @@ class Player(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
 
     def player_dead(self):
-        surface.blit(dead_img, (self.rect.x, self.rect.y))
+        surface.blit(dead_img, (self.rect.x - 15, self.rect.y - 25))
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -332,7 +332,7 @@ class Coin(pygame.sprite.Sprite):
 
     def colision(self):
         global coin_count
-        if self.coin_flag and abs(player.rect.x - self.x) < 20 and abs(player.rect.y - self.y) < 20:
+        if self.coin_flag and abs(player.rect.x - self.x) < 35 and abs(player.rect.y - self.y) < 35:
             self.coin_flag = False
             coin_count += 1
 
@@ -360,11 +360,11 @@ class Door(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         try:
             self.image = pygame.image.load(module1.DOOR_IMAGE_WAY)
-            self.image = pygame.transform.scale(self.image, (tile_size, tile_size))
+            self.image = pygame.transform.scale(self.image, (tile_size * 3, tile_size * 3))
         except:
             self.image = pygame.Surface((tile_size, tile_size))
             self.image.fill((150, 75, 0))
-        self.rect = self.image.get_rect(topleft=(x, y))
+        self.rect = self.image.get_rect(topleft=(x - 50, y))
 
     def draw(self):
         surface.blit(self.image, self.rect)
@@ -385,7 +385,7 @@ class HealthBar:
         pygame.draw.rect(surface, (0, 128, 0), (self.x, self.y, 150 * ratio, 20))
 
 
-healthbar = HealthBar(30, 30, 4, 4)
+healthbar = HealthBar(30, 30, 4, 3)
 font = pygame.font.Font(None, 36)
 
 
@@ -393,7 +393,7 @@ def load_level(level):
     global world, player, enemies, coins, door, current_level, player_health, coin_count, \
         bullets, game_over, flag_leve2
     current_level = level
-    player_health = 4.0
+    player_health = 3.0
     coin_count = 0
     game_over = False
     bullets = []
@@ -401,8 +401,8 @@ def load_level(level):
         world = World(level1_data)
         player.rect.x = 0
         player.rect.y = 160
-        door_pos_x = wight - tile_size  # правая часть экрана
-        door_pos_y = 0  # верх
+        door_pos_x = 700  # правая часть экрана
+        door_pos_y = 376  # верх
         door = Door(door_pos_x, door_pos_y)
 
         enemies.clear()
@@ -423,7 +423,7 @@ def load_level(level):
         world = World(level2_data)
         player.rect.x = 0
         player.rect.y = 160
-        door = Door(0, height - tile_size)  # левый нижний угол
+        door = Door(678, 316)
 
         enemies.clear()
         enemies.append(Enemy(600, 295, 0.05))
