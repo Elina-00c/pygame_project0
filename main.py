@@ -2,6 +2,7 @@ import pygame
 import sys
 
 import module1
+import module2
 
 pygame.init()
 wight = 830
@@ -9,9 +10,21 @@ height = 500
 surface = pygame.display.set_mode((wight, height))
 pygame.display.set_caption(module1.GAME_NAME)
 
+# Попытка загрузки финального окна
+try:
+    finale_image = pygame.image.load(module1.FINALE_WINDOW_WAY)
+except:
+    pass
+
+# Попытка загрузки музыки
+try:
+    sound = pygame.mixer.Sound(module1.MUSIC_WAY)
+except:
+    pass
+
 # Попытка загрузки правил игры
 try:
-    rules = pygame.image.load('files/rules.jpg')
+    rules = pygame.image.load(module1.RULES_IMAGE_WAY)
 except:
     pass
 
@@ -26,7 +39,7 @@ except:
 try:
     background = pygame.image.load(module1.BACK_IMAGE_WAY)
     background1 = pygame.image.load(module1.BACK1_IMAGE_WAY)
-    background2 = pygame.image.load('files/back2.jpg')
+    background2 = pygame.image.load(module1.BACK2_IMAGE_WAY)
 except:
     # Если файла нет, делаем серый фон
     background = pygame.Surface((wight, height))
@@ -63,10 +76,11 @@ tile_size = 30
 game_over = False
 start_game = False
 clock = pygame.time.Clock()
+sound.play(-1)
 
 # Глобальные переменные
 current_level = 0
-player_health = 4.0
+player_health = 3.0
 coin_count = 0
 door_count = 0
 bullets = []
@@ -76,29 +90,12 @@ door = None
 flag_level3 = False
 flag_level2 = False
 last_bullet_time = 0
+sps_csv = []
 bullet_cooldown = 500  # Задержка между выстрелами (мс)
 hit_cooldown = 1000  # Задержка между ударами врага (мс)
 
 # Данные уровней
-level1_data = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 0, 3, 0, 0, 0, 0, 1, 1, 0],
-    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-]
+level1_data = module2.level1_data
 
 
 # ======== Классы ========
@@ -120,6 +117,7 @@ class World:
         except:
             water_image = pygame.Surface((tile_size, tile_size))
             water_image.fill((0, 0, 255))
+        self.water_list = []
         self.tile_list = []
         row_count = 0
         for row in data:
@@ -136,6 +134,7 @@ class World:
                     img_rect = img.get_rect()
                     img_rect.x = col_count * tile_size
                     img_rect.y = row_count * tile_size
+                    self.water_list.append(img_rect)
                     self.tile_list.append((img, img_rect))
                 col_count += 1
             row_count += 1
@@ -174,45 +173,9 @@ class World2:
                     self.tile_list.append((img, img_rect))
 
 
-level2_data = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-    [1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 0, 3, 0, 0, 0, 0, 0, 1, 1],
-    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-    [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-    [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
-    [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1]
-]
+level2_data = module2.level2_data
 
-level3_data = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 1, 0, 3, 0, 0, 0, 0, 1, 1, 0],
-    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
-    [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-]
+level3_data = module2.level3_data
 
 
 class Button(pygame.sprite.Sprite):
@@ -362,9 +325,9 @@ class Enemy(pygame.sprite.Sprite):
         self.image = self.animation[self.enemy_anim_count]
         self.rect = self.image.get_rect(topleft=(enemy_x, enemy_y))
         self.direction = 1
-        self.speed = 2
-        self.min_x = enemy_x - 50
-        self.max_x = enemy_x + 50
+        self.speed = 1
+        self.min_x = enemy_x - 10
+        self.max_x = enemy_x + 10
 
     def update_movement(self):
         """
@@ -508,8 +471,6 @@ def load_level(level):
     global world, player, enemies, coins, door, current_level, player_health, coin_count, \
         bullets, game_over, flag_level2, flag_level3, door_count
     current_level = level
-    player_health = 3.0
-    coin_count = 0
     door_count = 0
     game_over = False
     bullets = []
@@ -540,14 +501,14 @@ def load_level(level):
         world = World(level2_data)
         player.rect.x = 0
         player.rect.y = 160
-        door_pos_x = 678  # правая часть экрана
-        door_pos_y = 316  # верх
+        door_pos_x = 700  # правая часть экрана
+        door_pos_y = 380  # верх
         door = Door(door_pos_x, door_pos_y)
         door_count = 2
 
         enemies.clear()
-        enemies.append(Enemy(600, 295, 0.05))
-        enemies.append(Enemy(260, 360, 0.05))
+        enemies.append(Enemy(580, 296, 0.05))
+        enemies.append(Enemy(260, 358, 0.05))
 
         coins.clear()
         coins.append(Coin(250, 370, 5))
@@ -557,20 +518,24 @@ def load_level(level):
     elif level == 3:
         flag_level3 = True
         surface.blit(background2, (0, 0))
-        world = World(level2_data)
+        world = World(level3_data)
         player.rect.x = 0
         player.rect.y = 160
         door_count = 3
-        door = Door(678, 316)
+        door = Door(685, 435)
 
         enemies.clear()
-        enemies.append(Enemy(600, 295, 0.05))
-        enemies.append(Enemy(260, 360, 0.05))
+        enemies.append(Enemy(120, 355, 0.05))
+        enemies.append(Enemy(565, 298, 0.05))
+        enemies.append(Enemy(520, 180, 0.05))
 
         coins.clear()
-        coins.append(Coin(250, 370, 5))
-        coins.append(Coin(513, 250, 5))
-        coins.append(Coin(730, 190, 5))
+        coins.append(Coin(120, 370, 5))
+        coins.append(Coin(360, 370, 5))
+        coins.append(Coin(760, 190, 5))
+        coins.append(Coin(380, 130, 5))
+        coins.append(Coin(535, 190, 5))
+        coins.append(Coin(543, 40, 5))
 
 
 # Создаём игрока
@@ -585,6 +550,7 @@ def pause_menu():
     :return:
     """
     paused = True
+    global player_health, coin_count, flag_level3, flag_level2, game_over
     resume_button = Button(315, 150, module1.RESUME_BUTTON)
     restart_button = Button(315, 230, module1.RESTART_BUTTON)
     exit_button = Button(315, 310, module1.EXIT_BUTTON)
@@ -598,7 +564,14 @@ def pause_menu():
                 if resume_button.button_rect.collidepoint(event.pos):
                     paused = False
                 elif restart_button.button_rect.collidepoint(event.pos):
-                    load_level(current_level)
+                    player.rect.x = 0
+                    player.rect.y = 160
+                    player_health = 3.0
+                    load_level(1)
+                    coin_count = 0
+                    flag_level3 = False
+                    flag_level2 = False
+                    game_over = False
                     paused = False
                 elif exit_button.button_rect.collidepoint(event.pos):
                     pygame.quit()
@@ -626,49 +599,59 @@ def pause_menu():
         clock.tick(60)
 
 
+def load_in_csv():
+    import csv
+    with open("adventures_in_the_voids_result.csv", mode="a", encoding='utf-8') as w_file:
+        file_writer = csv.writer(w_file, delimiter=",", lineterminator="\r")
+        for i in sps_csv:
+            file_writer.writerow(i)
+
+
 start_button = Button(315, 150, module1.START_BUTTON)
 exit_button_main = Button(315, 230, module1.EXIT_BUTTON)
-rules_button_main = Button(315, 310, module1.RULES_BUTTON)
-flag_rules = False
 
+finale_window = False
 running = True
 while running:
     clock.tick(90)
-    if flag_rules:
-        surface.fill((0, 0, 0))
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            flag_rules = False
     # проверяем началась ли игра
-    elif not start_game:
-        surface.fill((0, 0, 0))
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if start_button.button_rect.collidepoint(event.pos):
-                    start_game = True
-                elif exit_button_main.button_rect.collidepoint(event.pos):
+    if not start_game:
+        if finale_window:
+            surface.blit(finale_image, (0, 0))
+            coin_text = font.render(f"Score: {coin_count} coins", True, (255, 255, 255))
+            surface.blit(coin_text, (wight / 2 - 90, height / 2 - 200))
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_w]:
+                coin_count = 0
+                finale_window = False
+        else:
+            surface.fill((0, 0, 0))
+            surface.blit(rules, (600, 10))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     running = False
-                elif rules_button_main.button_rect.collidepoint(event.pos):
-                    flag_rules = True
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if start_button.button_rect.collidepoint(event.pos):
+                        start_game = True
+                    elif exit_button_main.button_rect.collidepoint(event.pos):
+                        running = False
 
-                    # Рисуем кнопки стартового меню
-        for btn in [start_button, exit_button_main, rules_button_main]:
-            if btn.button_rect.collidepoint(pygame.mouse.get_pos()):
-                pygame.draw.rect(btn.button_surface, (216, 177, 191), (1, 1, 148, 48))
-            else:
-                pygame.draw.rect(btn.button_surface, (0, 0, 0), (0, 0, 150, 50))
-                pygame.draw.rect(btn.button_surface, (255, 255, 255), (1, 1, 148, 48))
-                pygame.draw.rect(btn.button_surface, (0, 0, 0), (1, 1, 148, 1), 2)
-                pygame.draw.rect(btn.button_surface, (216, 177, 191), (1, 48, 148, 10), 2)
+                        # Рисуем кнопки стартового меню
+            for btn in [start_button, exit_button_main]:
+                if btn.button_rect.collidepoint(pygame.mouse.get_pos()):
+                    pygame.draw.rect(btn.button_surface, (216, 177, 191), (1, 1, 148, 48))
+                else:
+                    pygame.draw.rect(btn.button_surface, (0, 0, 0), (0, 0, 150, 50))
+                    pygame.draw.rect(btn.button_surface, (255, 255, 255), (1, 1, 148, 48))
+                    pygame.draw.rect(btn.button_surface, (0, 0, 0), (1, 1, 148, 1), 2)
+                    pygame.draw.rect(btn.button_surface, (216, 177, 191), (1, 48, 148, 10), 2)
 
-            btn.button_surface.blit(btn.text, btn.text_rect)
-            btn.screen.blit(btn.button_surface, (btn.button_rect.x, btn.button_rect.y))
+                btn.button_surface.blit(btn.text, btn.text_rect)
+                btn.screen.blit(btn.button_surface, (btn.button_rect.x, btn.button_rect.y))
 
         pygame.display.update()
 
-    elif start_game and not flag_rules:
+    elif start_game:
         clock.tick(60)
         if not flag_level2 and not flag_level3:
             surface.blit(background, (0, 0))
@@ -728,6 +711,16 @@ while running:
             else:
                 load_level(3)
 
+        if player.rect.colliderect(door.rect) and door_count == 3:
+            player.rect.x = 0
+            player.rect.y = 160
+            player_health = 3.0
+            load_level(1)
+            flag_level3 = False
+            flag_level2 = False
+            finale_window = True
+            start_game = False
+
         # Здоровье и монеты
         healthbar.draw(player_health)
         coin_text = font.render(f"Coins: {coin_count}", True, (255, 255, 255))
@@ -749,12 +742,21 @@ while running:
         # Если здоровье <= 0 – смерть
         if player_health <= 0:
             game_over = True
+            sps_csv.append([coin_count, current_level])
             player.player_dead()
+
         # Если здоровье > 0, но игрок упал в бездну или воду – смерть
-        if player_health > 0 and player.rect.y == height:
+        if player_health > 0 and player.rect.y >= height:
             healthbar.draw(0)
             game_over = True
+            sps_csv.append([coin_count, current_level])
             player.player_dead()
+
+        # стодкновение с границей экрана
+        if player.rect.x > wight:
+            player.rect.x = wight
+        if player.rect.x < 0:
+            player.rect.x = 0
 
         pygame.display.update()
 

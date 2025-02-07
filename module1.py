@@ -1,4 +1,4 @@
-GAME_NAME = 'our game'
+GAME_NAME = 'adventures in the voids'
 ICONE_IMAGE_WAY = 'files/icon.png'
 DEAD_IMAGE_WAY = 'files/dead.png'
 COIN_IMAGE_WAY = 'files/coin.png'
@@ -10,7 +10,10 @@ BACK_IMAGE_WAY = 'files/result_a5439e1.jpg'
 BACK1_IMAGE_WAY = 'files/back1.jpg'
 BULLET_IMAGE_WAY = 'files/bullet.png'
 DOOR_IMAGE_WAY = 'files/door.png'
-RULES_BUTTON = 'Rules'
 RESUME_BUTTON = "Resume"
 RESTART_BUTTON = "Restart"
+FINALE_WINDOW_WAY = "files/win.jpg"
+MUSIC_WAY = 'files/music .mp3'
+RULES_IMAGE_WAY = 'files/rules.jpg'
+BACK2_IMAGE_WAY = 'files/back2.jpg'
 
