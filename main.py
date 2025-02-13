@@ -90,7 +90,6 @@ door = None
 flag_level3 = False
 flag_level2 = False
 last_bullet_time = 0
-sps_csv = []
 bullet_cooldown = 500  # Задержка между выстрелами (мс)
 hit_cooldown = 1000  # Задержка между ударами врага (мс)
 
@@ -599,14 +598,6 @@ def pause_menu():
         clock.tick(60)
 
 
-def load_in_csv():
-    import csv
-    with open("adventures_in_the_voids_result.csv", mode="a", encoding='utf-8') as w_file:
-        file_writer = csv.writer(w_file, delimiter=",", lineterminator="\r")
-        for i in sps_csv:
-            file_writer.writerow(i)
-
-
 start_button = Button(315, 150, module1.START_BUTTON)
 exit_button_main = Button(315, 230, module1.EXIT_BUTTON)
 
@@ -742,14 +733,12 @@ while running:
         # Если здоровье <= 0 – смерть
         if player_health <= 0:
             game_over = True
-            sps_csv.append([coin_count, current_level])
             player.player_dead()
 
         # Если здоровье > 0, но игрок упал в бездну или воду – смерть
         if player_health > 0 and player.rect.y >= height:
             healthbar.draw(0)
             game_over = True
-            sps_csv.append([coin_count, current_level])
             player.player_dead()
 
         # стодкновение с границей экрана
